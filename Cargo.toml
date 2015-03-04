@@ -1,0 +1,5 @@
+[package]
+
+name = "allocator"
+version = "0.0.1"
+authors = ["Peter Horne"]
