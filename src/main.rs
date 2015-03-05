@@ -36,24 +36,40 @@ struct Reservation {
     allocations: AllocationMap,
 }
 
-// ["reservation_id", "item_id=3", "item_id=2"]
-fn parse_args(args: &Vec<String>) -> Result<Reservation, &str> {
-    let reservation_id = args[1].clone(); // todo
-    let mut reservation = Reservation { id: reservation_id, allocations: HashMap::new() };
+/// Parses cli args of the format: ./allocator 1234 aaaa=2 bbbb=2
+/// 
+/// Where:
+///     1234 = Reservation ID
+///     aaaa = Stock Item ID
+fn parse_args<'a>(args: Vec<String>) -> Result<Reservation, &'a str> {
+    let reservation_id = match args.get(1) {
+        Some(id) => id.clone(),
+        None => { return Err("Missing reservation id.") },
+    };
 
-    for arg in args.slice_from(2) {
-        let split = arg.split_str("=").collect::<Vec<&str>>();
-        let stock_id = split[0];
-        let quantity: i32 = match split[1].parse() {
-            Ok(num) => num,
-            Err(_) => { return Err("It borked.") },
+    let mut allocations = HashMap::new();
+    for arg in &args[2..] {
+        let mut split = arg.split("=");
+
+        let stock_id = match split.next() {
+            Some(id) => id,
+            None => { return Err("Missing stock id.") },
         };
-        // (stock_id, quantity) = arg.split_str("=");
-        // reservation.allocations.insert(stock_id, quantity);
+
+        let quantity: Quantity = match split.next() {
+            Some(num) => {
+                match num.parse() {
+                    Ok(num) => num,
+                    Err(_) => { return Err("Quantity is not an integer.") },
+                }
+            },
+            None => { return Err("Missing or quantity.") },
+        };
+
+        allocations.insert(stock_id.to_string(), quantity);
     }
 
-
-    Ok(reservation)
+    Ok(Reservation { id: reservation_id, allocations: allocations })
 }
 
 fn log_request(reservation: Reservation) {
@@ -65,8 +81,7 @@ fn log_request(reservation: Reservation) {
 // parse log -> Database(Stocks, Reservations)
 // return reservation details -> Reservation
 fn main() {
-    let args: Vec<_> = env::args().collect();
-    let request = match parse_args(&args) {
+    let request = match parse_args(env::args().collect()) {
         Ok(reservation) => reservation,
         Err(_) => {
             println!("Invalid arguments.");
@@ -75,6 +90,7 @@ fn main() {
     };
 
     println!("{:?}", request.id);
+    println!("{:?}", request.allocations);
 
     log_request(request);
 
