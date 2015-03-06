@@ -2,6 +2,7 @@ use std::env;
 // use std::result::Result;
 use std::collections::HashMap;
 use std::collections::hash_map::Entry::{Occupied, Vacant};
+use std::old_io::{File, Append, Write};
 
 type ItemMap = HashMap<&'static str, i32>;
 
@@ -72,8 +73,25 @@ fn parse_args<'a>(args: Vec<String>) -> Result<Reservation, &'a str> {
     Ok(Reservation { id: reservation_id, allocations: allocations })
 }
 
-fn log_request(reservation: Reservation) {
+fn write_to_journal(reservation: Reservation) -> bool {
+    let path = Path::new("/tmp/allocator-journal.txt");
 
+    let mut file = match File::open_mode(&path, Append, Write) {
+        Err(why) => {
+            println!("{}", why);
+            return false;
+        },
+        Ok(file) => file,
+    };
+
+    let allocations = reservation.allocations.iter()
+        .map(|(k, v)| [k, &v.to_string()].connect("="));
+    println!("{:?}", allocations);
+
+    let line = [reservation.id].connect(" ");
+    println!("{}", line);
+
+    false
 }
 
 // parse input -> Reservation
@@ -92,7 +110,10 @@ fn main() {
     println!("{:?}", request.id);
     println!("{:?}", request.allocations);
 
-    log_request(request);
+    if !write_to_journal(request) {
+        println!("Failed to write to journal.");
+        return;
+    }
 
     // let reservations = get_reservations();
 
