@@ -42,14 +42,14 @@ struct Reservation {
 /// Where:
 ///     1234 = Reservation ID
 ///     aaaa = Stock Item ID
-fn parse_args<'a>(args: Vec<String>) -> Result<Reservation, &'a str> {
-    let reservation_id = match args.get(1) {
+fn parse_request<'a>(args: Vec<String>) -> Result<Reservation, &'a str> {
+    let reservation_id = match args.get(0) {
         Some(id) => id.clone(),
         None => { return Err("Missing reservation id.") },
     };
 
     let mut allocations = HashMap::new();
-    for arg in &args[2..] {
+    for arg in &args[1..] {
         let mut split = arg.split("=");
 
         let stock_id = match split.next() {
@@ -105,7 +105,8 @@ fn write_to_journal(reservation: Reservation) -> bool {
 // parse log -> Database(Stocks, Reservations)
 // return reservation details -> Reservation
 fn main() {
-    let request = match parse_args(env::args().collect()) {
+    let args = env::args().skip(1).collect();
+    let request = match parse_request(args) {
         Ok(reservation) => reservation,
         Err(_) => {
             println!("Invalid arguments.");
