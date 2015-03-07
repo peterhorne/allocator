@@ -85,13 +85,19 @@ fn write_to_journal(reservation: Reservation) -> bool {
     };
 
     let allocations = reservation.allocations.iter()
-        .map(|(k, v)| [k, &v.to_string()].connect("="));
-    println!("{:?}", allocations);
+        .map(|(stock_id, quantity)| format!("{}={}", stock_id, quantity))
+        .collect::<Vec<String>>()
+        .connect(" ");
 
-    let line = [reservation.id].connect(" ");
-    println!("{}", line);
+    let line = format!("{}\n", [reservation.id, allocations].connect(" "));
 
-    false
+    match file.write_str(&line) {
+        Err(why) => {
+            println!("{}", why);
+            false
+        },
+        Ok(_) => true
+    }
 }
 
 // parse input -> Reservation
