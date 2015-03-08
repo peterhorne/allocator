@@ -2,7 +2,7 @@ use std::env;
 // use std::result::Result;
 use std::collections::HashMap;
 use std::collections::hash_map::Entry::{Occupied, Vacant};
-use std::old_io::{File, Append, Write};
+use std::old_io::{BufferedReader, Lines, File, Append, Write, IoResult};
 
 type ItemMap = HashMap<&'static str, i32>;
 
@@ -42,10 +42,10 @@ struct Reservation {
 /// Where:
 ///     1234 = Reservation ID
 ///     aaaa = Stock Item ID
-fn parse_request<'a>(args: Vec<String>) -> Result<Reservation, &'a str> {
+fn parse_request<'a>(args: Vec<String>) -> Result<Reservation, String> {
     let reservation_id = match args.get(0) {
         Some(id) => id.clone(),
-        None => { return Err("Missing reservation id.") },
+        None => { return Err("Missing reservation id.".to_string()) },
     };
 
     let mut allocations = HashMap::new();
@@ -53,18 +53,18 @@ fn parse_request<'a>(args: Vec<String>) -> Result<Reservation, &'a str> {
         let mut split = arg.split("=");
 
         let stock_id = match split.next() {
-            Some(id) => id,
-            None => { return Err("Missing stock id.") },
+            Some(id) => id.clone(),
+            None => { return Err("Missing stock id.".to_string()) },
         };
 
         let quantity: Quantity = match split.next() {
             Some(num) => {
                 match num.parse() {
                     Ok(num) => num,
-                    Err(_) => { return Err("Quantity is not an integer.") },
+                    Err(_) => { return Err(format!("Quantity is not an integer: {}", num)) },
                 }
             },
-            None => { return Err("Missing or quantity.") },
+            None => { return Err("Missing or quantity.".to_string()) },
         };
 
         allocations.insert(stock_id.to_string(), quantity);
@@ -100,6 +100,34 @@ fn write_to_journal(reservation: Reservation) -> bool {
     }
 }
 
+struct Journal<T> where T: Buffer {
+    file: T,
+}
+
+impl<T: Buffer> Iterator for Journal<T> {
+    type Item = Reservation;
+
+    fn next(&mut self) -> Option<Reservation> {
+        match self.file.read_line() {
+            Ok(line) => {
+                Some(parse_request(
+                        line.split(" ")
+                        .map(|s| s.trim().to_string())
+                        .collect::<Vec<String>>())
+                    .unwrap())
+            },
+            Err(_) => None,
+        }
+    }
+}
+
+fn read_journal() -> Journal<BufferedReader<IoResult<File>>> {
+    let path = Path::new("/tmp/allocator-journal.txt");
+    let mut file = BufferedReader::new(File::open(&path));
+
+    Journal {file: file}
+}
+
 // parse input -> Reservation
 // write input to log
 // parse log -> Database(Stocks, Reservations)
@@ -120,6 +148,10 @@ fn main() {
     if !write_to_journal(request) {
         println!("Failed to write to journal.");
         return;
+    }
+
+    for reservation in read_journal() {
+        println!("{:?} {:?}", reservation.id, reservation.allocations);
     }
 
     // let reservations = get_reservations();
