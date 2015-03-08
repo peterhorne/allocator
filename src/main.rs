@@ -1,8 +1,7 @@
 use std::env;
-// use std::result::Result;
 use std::collections::HashMap;
 use std::collections::hash_map::Entry::{Occupied, Vacant};
-use std::old_io::{BufferedReader, Lines, File, Append, Write, IoResult};
+use std::old_io::{BufferedReader, File, Append, Write, IoResult};
 
 type ItemMap = HashMap<&'static str, i32>;
 
@@ -100,11 +99,11 @@ fn write_to_journal(reservation: Reservation) -> bool {
     }
 }
 
-struct Journal<T> where T: Buffer {
-    file: T,
+struct Journal {
+    file: BufferedReader<IoResult<File>>,
 }
 
-impl<T: Buffer> Iterator for Journal<T> {
+impl Iterator for Journal {
     type Item = Reservation;
 
     fn next(&mut self) -> Option<Reservation> {
@@ -121,7 +120,7 @@ impl<T: Buffer> Iterator for Journal<T> {
     }
 }
 
-fn read_journal() -> Journal<BufferedReader<IoResult<File>>> {
+fn read_journal() -> Journal {
     let path = Path::new("/tmp/allocator-journal.txt");
     let mut file = BufferedReader::new(File::open(&path));
 
