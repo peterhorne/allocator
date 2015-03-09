@@ -103,6 +103,14 @@ struct Journal {
     file: BufferedReader<IoResult<File>>,
 }
 
+impl Journal {
+    fn new() -> Journal {
+        let path = Path::new("/tmp/allocator-journal.txt");
+        let mut file = BufferedReader::new(File::open(&path));
+        Journal {file: file}
+    }
+}
+
 impl Iterator for Journal {
     type Item = Reservation;
 
@@ -118,13 +126,6 @@ impl Iterator for Journal {
             Err(_) => None,
         }
     }
-}
-
-fn read_journal() -> Journal {
-    let path = Path::new("/tmp/allocator-journal.txt");
-    let mut file = BufferedReader::new(File::open(&path));
-
-    Journal {file: file}
 }
 
 // parse input -> Reservation
@@ -149,7 +150,8 @@ fn main() {
         return;
     }
 
-    for reservation in read_journal() {
+    let mut journal = Journal::new();
+    for reservation in journal {
         println!("{:?} {:?}", reservation.id, reservation.allocations);
     }
 
