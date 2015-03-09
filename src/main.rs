@@ -63,7 +63,7 @@ fn parse_request<'a>(args: Vec<String>) -> Result<Reservation, String> {
                     Err(_) => { return Err(format!("Quantity is not an integer: {}", num)) },
                 }
             },
-            None => { return Err("Missing or quantity.".to_string()) },
+            None => { return Err("Missing quantity".to_string()) },
         };
 
         allocations.insert(stock_id.to_string(), quantity);
@@ -134,23 +134,14 @@ impl Iterator for Journal {
 // return reservation details -> Reservation
 fn main() {
     let args = env::args().skip(1).collect();
-    let request = match parse_request(args) {
-        Ok(reservation) => reservation,
-        Err(_) => {
-            println!("Invalid arguments.");
-            return;
-        }
-    };
-
-    println!("{:?}", request.id);
-    println!("{:?}", request.allocations);
+    let request = parse_request(args).unwrap();
 
     if !write_to_journal(request) {
         println!("Failed to write to journal.");
         return;
     }
 
-    let mut journal = Journal::new();
+    let journal = Journal::new();
     for reservation in journal {
         println!("{:?} {:?}", reservation.id, reservation.allocations);
     }
