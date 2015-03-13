@@ -1,12 +1,12 @@
 use std::collections::HashMap;
 
-type ResourceMap = HashMap<Guid, Quantity>;
-type Guid = String;
+type ResourceMap = HashMap<Uuid, Quantity>;
+type Uuid = String;
 type Quantity = i32;
 
 pub struct Database {
     resources: ResourceMap,
-    consumers: HashMap<Guid, ResourceMap>, 
+    consumers: HashMap<Uuid, ResourceMap>,
 }
 
 impl Database {
