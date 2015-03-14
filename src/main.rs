@@ -29,7 +29,7 @@ fn get_reservations<'a>() -> HashMap<&'a str, ItemMap> {
 }
 
 mod consumer;
-use consumer::{Consumer, AllocationMap, Quantity};
+use consumer::Consumer;
 
 
 mod journal;
@@ -61,14 +61,17 @@ impl Iterator for ConsumerRequests {
 fn main() {
     let mut database = Database::new();
     let mut journal = Journal::new();
-    for reservation in journal.iter() {
-        println!("{:?} {:?}", reservation.id, reservation.allocations);
+    for consumer in journal.iter() {
+        database.consume(&consumer);
+        println!("{:?} {:?}", consumer.id, consumer.resources);
     }
 
     let requests = ConsumerRequests::new();
 
     for request in requests {
-        journal.write(request);
+        journal.write(&request);
+        let result = database.consume(&request);
+        println!("{:?}", result);
     }
 
     // let reservations = get_reservations();

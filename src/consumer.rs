@@ -1,11 +1,16 @@
 use std::collections::HashMap;
+use database::{Uuid, Quantity, ResourceMap};
 
-pub type AllocationMap = HashMap<String, Quantity>;
-pub type Quantity = i32;
-
+#[derive(Debug)]
 pub struct Consumer {
-    pub id: String,
-    pub allocations: AllocationMap,
+    pub id: Uuid,
+    pub resources: ResourceMap,
+}
+
+impl Consumer {
+    pub fn new(id: Uuid) -> Consumer {
+        Consumer { id: id, resources: ResourceMap::new() }
+    }
 }
 
 /// Parses cli args of the format: ./allocator 1234 aaaa=2 bbbb=2
@@ -14,12 +19,12 @@ pub struct Consumer {
 ///     1234 = Consumer ID
 ///     aaaa = Stock Item ID
 fn parse_request<'a>(args: Vec<String>) -> Result<Consumer, String> {
-    let reservation_id = match args.get(0) {
+    let consumer_id = match args.get(0) {
         Some(id) => id.clone(),
-        None => { return Err("Missing reservation id.".to_string()) },
+        None => { return Err("Missing consumer id.".to_string()) },
     };
 
-    let mut allocations = HashMap::new();
+    let mut resources = HashMap::new();
     for arg in &args[1..] {
         let mut split = arg.split("=");
 
@@ -38,10 +43,10 @@ fn parse_request<'a>(args: Vec<String>) -> Result<Consumer, String> {
             None => { return Err("Missing quantity".to_string()) },
         };
 
-        allocations.insert(stock_id.to_string(), quantity);
+        resources.insert(stock_id.to_string(), quantity);
     }
 
-    Ok(Consumer { id: reservation_id, allocations: allocations })
+    Ok(Consumer { id: consumer_id, resources: resources })
 }
 
 impl Consumer {

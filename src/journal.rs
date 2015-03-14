@@ -10,7 +10,7 @@ impl Journal {
         Journal { path: Path::new("/tmp/allocator-journal.txt") }
     }
 
-    pub fn write(&mut self, reservation: Consumer) -> bool {
+    pub fn write(&mut self, consumer: &Consumer) -> bool {
         let mut file = match File::open_mode(&self.path, Append, Write) {
             Err(why) => {
                 println!("{}", why);
@@ -19,12 +19,12 @@ impl Journal {
             Ok(file) => file,
         };
 
-        let allocations = reservation.allocations.iter()
+        let resources = consumer.resources.iter()
             .map(|(stock_id, quantity)| format!("{}={}", stock_id, quantity))
             .collect::<Vec<String>>()
             .connect(" ");
 
-        let line = format!("{}\n", [reservation.id, allocations].connect(" "));
+        let line = format!("{} {}\n", consumer.id, resources);
 
         match file.write_str(&line) {
             Err(why) => {

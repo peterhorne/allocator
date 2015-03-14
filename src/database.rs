@@ -1,8 +1,9 @@
 use std::collections::HashMap;
+use consumer::Consumer;
 
-type ResourceMap = HashMap<Uuid, Quantity>;
-type Uuid = String;
-type Quantity = i32;
+pub type Uuid = String;
+pub type Quantity = i32;
+pub type ResourceMap = HashMap<Uuid, Quantity>;
 
 pub struct Database {
     resources: ResourceMap,
@@ -12,5 +13,13 @@ pub struct Database {
 impl Database {
     pub fn new() -> Database {
         Database { resources: HashMap::new(), consumers: HashMap::new() }
+    }
+
+    pub fn stock(&mut self, resource_id: Uuid, quantity: i32) -> i32 {
+        0
+    }
+
+    pub fn consume(&mut self, consumer: &Consumer) -> Consumer {
+        Consumer::new("1234".to_string())
     }
 }
