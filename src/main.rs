@@ -38,17 +38,17 @@ use journal::Journal;
 mod database;
 use database::Database;
 
-struct ConsumerRequests {
+struct Input {
     stdin: StdinReader,
 }
 
-impl ConsumerRequests {
-    fn new() -> ConsumerRequests {
-        ConsumerRequests { stdin: old_io::stdin() }
+impl Input {
+    fn new() -> Input {
+        Input { stdin: old_io::stdin() }
     }
 }
 
-impl Iterator for ConsumerRequests {
+impl Iterator for Input {
     type Item = Consumer;
 
     fn next(&mut self) -> Option<Consumer> {
@@ -58,21 +58,26 @@ impl Iterator for ConsumerRequests {
     }
 }
 
+mod resource;
+use resource::Resource;
+
 fn main() {
-    let mut database = Database::new();
-    let mut journal = Journal::new();
-    for consumer in journal.iter() {
-        database.consume(&consumer);
-        println!("{:?} {:?}", consumer.id, consumer.resources);
-    }
+    let resource = Resource::new_from_string("aaaa 23");
+    println!("{:?}", resource);
+    // let mut database = Database::new();
+    // let mut journal = Journal::new();
+    // for consumer in journal.iter() {
+    //     database.consume(&consumer);
+    //     println!("{:?} {:?}", consumer.id, consumer.resources);
+    // }
 
-    let requests = ConsumerRequests::new();
+    // let input = Input::new();
 
-    for request in requests {
-        journal.write(&request);
-        let result = database.consume(&request);
-        println!("{:?}", result);
-    }
+    // for command in input {
+    //     journal.write(&command);
+    //     let result = database.apply(&command);
+    //     println!("{:?}", result);
+    // }
 
     // let reservations = get_reservations();
 
