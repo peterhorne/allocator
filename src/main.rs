@@ -28,15 +28,18 @@ fn get_reservations<'a>() -> HashMap<&'a str, ItemMap> {
     reservations
 }
 
+mod resource;
+use resource::Resource;
+
 mod consumer;
 use consumer::Consumer;
-
 
 mod journal;
 use journal::Journal;
 
 mod database;
 use database::Database;
+use database::Command;
 
 struct Input {
     stdin: StdinReader,
@@ -49,35 +52,39 @@ impl Input {
 }
 
 impl Iterator for Input {
-    type Item = Consumer;
+    type Item = Result<Command, String>;
 
-    fn next(&mut self) -> Option<Consumer> {
+    fn next(&mut self) -> Option<Result<Command, String>> {
         println!("Enter request: (<consumer_id resource_id=quantity resource_id=quantity)");
         let input = self.stdin.read_line().ok().expect("Failed to read line");
-        Consumer::new_from_string(input)
+        let parts =  &input.splitn(1, ' ').collect::<Vec<&str>>();
+
+        let result: Result<Command, String> = match parts[0] {
+            "STOCK" => Resource::new_from_string(parts[1]),
+            "CONSUME" => Consumer::new_from_string(parts[1]),
+            _ => Err("Invalid command.".to_string()),
+        };
+
+        Some(result)
     }
 }
 
-mod resource;
-use resource::Resource;
-
 fn main() {
-    let resource = Resource::new_from_string("aaaa 23");
-    println!("{:?}", resource);
-    // let mut database = Database::new();
-    // let mut journal = Journal::new();
-    // for consumer in journal.iter() {
-    //     database.consume(&consumer);
-    //     println!("{:?} {:?}", consumer.id, consumer.resources);
-    // }
+    let mut database = Database::new();
+    let mut journal = Journal::new();
+    for command in journal.iter() {
+        database.apply(&command);
+        println!("{:?}", command);
+    }
 
-    // let input = Input::new();
+    let input = Input::new();
 
-    // for command in input {
-    //     journal.write(&command);
-    //     let result = database.apply(&command);
-    //     println!("{:?}", result);
-    // }
+    for line in input {
+        let command = line.ok().expect("fucked...");
+        journal.write(&command);
+        let result = database.apply(&command);
+        println!("{:?}", result);
+    }
 
     // let reservations = get_reservations();
 

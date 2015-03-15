@@ -50,7 +50,7 @@ impl Iterator for JournalIter {
 
     fn next(&mut self) -> Option<Consumer> {
         match self.file.read_line() {
-            Ok(line) => Consumer::new_from_string(line),
+            Ok(line) => Consumer::new_from_string(&line).ok(),
             Err(_) => None,
         }
     }

@@ -12,20 +12,13 @@ impl Consumer {
         Consumer { id: id, resources: ResourceMap::new() }
     }
 
-    pub fn new_from_string(line: String) -> Option<Consumer> {
-        let split = line.split(" ")
+    // args: "<id> <resource_id>=<quantity> <resource_id>=<quantity>"
+    // args: "1234 aaaa=2 bbbb=1"
+    pub fn new_from_string(line: &str) -> Result<Consumer, String> {
+        let args = line.split(" ")
                         .map(|s| s.trim().to_string())
                         .collect::<Vec<String>>();
-        parse_request(split).ok()
-    }
-}
 
-/// Parses cli args of the format: ./allocator 1234 aaaa=2 bbbb=2
-/// 
-/// Where:
-///     1234 = Consumer ID
-///     aaaa = Stock Item ID
-fn parse_request<'a>(args: Vec<String>) -> Result<Consumer, String> {
     let consumer_id = match args.get(0) {
         Some(id) => id.clone(),
         None => { return Err("Missing consumer id.".to_string()) },
@@ -54,4 +47,8 @@ fn parse_request<'a>(args: Vec<String>) -> Result<Consumer, String> {
     }
 
     Ok(Consumer { id: consumer_id, resources: resources })
+    }
+}
+
+fn parse_request<'a>(args: Vec<String>) -> Result<Consumer, String> {
 }
