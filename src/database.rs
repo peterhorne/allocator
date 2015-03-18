@@ -4,6 +4,7 @@ use consumer::Consumer;
 pub type Uuid = String;
 pub type Quantity = i32;
 pub type ResourceMap = HashMap<Uuid, Quantity>;
+pub type ConsumerMap = HashMap<Uuid, ResourceMap>;
 
 pub enum Command {
     Resource,
@@ -12,7 +13,7 @@ pub enum Command {
 
 pub struct Database {
     resources: ResourceMap,
-    consumers: HashMap<Uuid, ResourceMap>,
+    consumers: ConsumerMap,
 }
 
 impl Database {
@@ -22,13 +23,5 @@ impl Database {
 
     pub fn apply(&mut self, command: Command) -> Command {
         command
-    }
-
-    pub fn stock(&mut self, resource_id: Uuid, quantity: i32) -> i32 {
-        0
-    }
-
-    pub fn consume(&mut self, consumer: &Consumer) -> Consumer {
-        Consumer::new("1234".to_string())
     }
 }

@@ -69,21 +69,27 @@ impl Iterator for Input {
     }
 }
 
+mod commands;
+
 fn main() {
-    let mut database = Database::new();
+    let mut resources: ResourceMap = HashMap::new();
+    let mut consumers: ConsumerMap = HashMap::new();
+
     let mut journal = Journal::new();
     for command in journal.iter() {
-        database.apply(&command);
+        command.process(&resources, &consumers);
         println!("{:?}", command);
     }
 
-    let input = Input::new();
-
-    for line in input {
-        let command = line.ok().expect("fucked...");
-        journal.write(&command);
-        let result = database.apply(&command);
-        println!("{:?}", result);
+    for line in Input::new() {
+        match line {
+            Err(why)    => println!("{}", why),
+            Ok(command) => {
+                journal.write(&command);
+                let result = command.process(&resources, &consumers);
+                println!("{:?}", result);
+            },
+        }
     }
 
     // let reservations = get_reservations();
