@@ -5,8 +5,19 @@ pub type Quantity = i32;
 pub type ResourceMap = HashMap<Uuid, Quantity>;
 pub type ConsumerMap = HashMap<Uuid, ResourceMap>;
 
+pub fn parse(args: Vec<&str>) -> Result<Command, &str> {
+    match args {
+        [name, ..args] => match name {
+            "RESOURCE" => Resource::parse(args),
+            "CONSUMER" => Consumer::parse(args),
+            _ => Err("Unrecognised command."),
+        },
+        _ => Err("Unrecognised command."),
+    }
+}
+
 trait Command {
-    pub fn new_from_string(args: &str) -> Self;
+    pub fn parse(args: Vec<&str>) -> Result<Self, &str>;
     pub fn process(&self, &resources: ResourceMap, &consumers: ConsumerMap) -> Result<Self, &str>;
 }
 
@@ -20,45 +31,24 @@ impl Command for Resource {
         Resource { id: id, quantity: quantity }
     }
 
-    // args: "<id> <quantity>"
-    // args: "aaaa 23"
-    pub fn new_from_string(args: &str) -> Result<Resource, &str> {
-        match &args.split(' ').collect::<Vec<&str>>()[..] {
-            [id, quantity] => {
-                match quantity.parse::<i32>() {
-                    Ok(quantity) => Ok(Resource::new(id.to_string(), quantity)),
-                    Err(_) => Err("Quantity is not i32."),
-                }
-            },
+    pub fn parse(args: Vec<&str>) -> Result<Self, &str> {
+        match args {
+            [id, quantity: u32] => Ok(Resource::new(id, quantity)),
             _ => Err("Invalid arguments."),
         }
     }
-}
 
-struct Resource {
-    id: Uuid,
-    amount: u32,
-}
-
-impl Resource {
-    pub fn apply() {
-
-    }
-}
-
-type Resources = HashMap<Uuid, Resource>;
-
-impl Resources {
-    pub fn add(&mut self, others: Resources) -> Resources {
-        for other in others {
-            match self.entry(other.id) {
-                Vacant(entry)
-            }
+    pub fn process(&self, &resources, &consumers) -> Resource {
+        let resource = match resources.entry(self.id) {
+            Occupied(entry) => {
+                entry.set(min(entry.get(), self.quantity));
+                entry.clone()
+            },
+            Vacant(entry) => {
+                entry.set(self);
+                entry.clone()
+            },
         }
-    }
-
-    pub fn subtract(&mut self, others: Resources) -> Resources {
-
     }
 }
 
