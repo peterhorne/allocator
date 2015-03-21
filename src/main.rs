@@ -1,7 +1,5 @@
 use std::collections::HashMap;
 use std::collections::hash_map::Entry::{Occupied, Vacant};
-use std::old_io;
-use std::old_io::stdio::{StdinReader};
 
 type ItemMap = HashMap<&'static str, i32>;
 
@@ -17,51 +15,11 @@ fn diff(a: &ItemMap, b: &ItemMap) -> ItemMap {
     result
 }
 
-fn get_reservations<'a>() -> HashMap<&'a str, ItemMap> {
-    let mut items = HashMap::new();
-    items.insert("aaaa", 2);
-    items.insert("bbbb", 2);
-
-    let mut reservations = HashMap::new();
-    reservations.insert("1234", items);
-
-    reservations
-}
-
-// mod resource;
-// use resource::Resource;
-
-// mod consumer;
-// use consumer::Consumer;
-
 mod journal;
 use journal::Journal;
 
-// mod database;
-// use database::Database;
-// use database::Command;
-
-struct Input {
-    stdin: StdinReader,
-}
-
-impl Input {
-    fn new() -> Input {
-        Input { stdin: old_io::stdin() }
-    }
-}
-
-impl Iterator for Input {
-    type Item = Result<Box<Command>, &'static str>;
-
-    fn next(&mut self) -> Option<Result<Box<Command>, &'static str>> {
-        println!("Enter request: (<consumer_id resource_id=quantity resource_id=quantity)");
-        match self.stdin.read_line() {
-            Ok(line) => Some(commands::deserialise(&line)),
-            Err(_)   => None,
-        }
-    }
-}
+mod input;
+use input::Input;
 
 mod commands;
 use commands::{Command, ResourceMap, ConsumerMap};
