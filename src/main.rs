@@ -72,12 +72,9 @@ fn main() {
     let mut journal = Journal::new();
 
     for line in journal.iter() {
-        match line {
-            Ok(command) => {
-                let result = command.process(&mut resources, &mut consumers);
-            },
-            Err(why) => println!("{}", why),
-        };
+        line.ok()
+            .expect("Journal is corrupt")
+            .process(&mut resources, &mut consumers);
     }
 
     println!("{:?}", resources);
