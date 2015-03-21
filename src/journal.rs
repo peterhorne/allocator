@@ -1,5 +1,7 @@
 use std::old_io::{BufferedReader, File, Append, Write, IoResult};
-use consumer::Consumer;
+// use consumer::Consumer;
+use commands::Command;
+use commands;
 
 pub struct Journal {
     path: Path,
@@ -10,7 +12,7 @@ impl Journal {
         Journal { path: Path::new("/tmp/allocator-journal.txt") }
     }
 
-    pub fn write(&mut self, consumer: &Consumer) -> bool {
+    pub fn write<T: Command>(&mut self, command: &T) -> bool {
         let mut file = match File::open_mode(&self.path, Append, Write) {
             Err(why) => {
                 println!("{}", why);
@@ -19,12 +21,14 @@ impl Journal {
             Ok(file) => file,
         };
 
-        let resources = consumer.resources.iter()
-            .map(|(stock_id, quantity)| format!("{}={}", stock_id, quantity))
-            .collect::<Vec<String>>()
-            .connect(" ");
+        // let resources = consumer.resources.iter()
+        //     .map(|(stock_id, quantity)| format!("{}={}", stock_id, quantity))
+        //     .collect::<Vec<String>>()
+        //     .connect(" ");
 
-        let line = format!("{} {}\n", consumer.id, resources);
+        // let line = format!("{} {}\n", consumer.id, resources);
+
+        let line = command.serialise();
 
         match file.write_str(&line) {
             Err(why) => {
@@ -46,12 +50,12 @@ struct JournalIter {
 }
 
 impl Iterator for JournalIter {
-    type Item = Consumer;
+    type Item = Result<Box<Command>, &'static str>;
 
-    fn next(&mut self) -> Option<Consumer> {
+    fn next(&mut self) -> Option<Result<Box<Command>, &'static str>> {
         match self.file.read_line() {
-            Ok(line) => Consumer::new_from_string(&line).ok(),
-            Err(_) => None,
+            Ok(line) => Some(commands::deserialise(&line)),
+            Err(why) => { println!("{}", why); None },
         }
     }
 }

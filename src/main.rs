@@ -28,18 +28,18 @@ fn get_reservations<'a>() -> HashMap<&'a str, ItemMap> {
     reservations
 }
 
-mod resource;
-use resource::Resource;
+// mod resource;
+// use resource::Resource;
 
-mod consumer;
-use consumer::Consumer;
+// mod consumer;
+// use consumer::Consumer;
 
 mod journal;
 use journal::Journal;
 
-mod database;
-use database::Database;
-use database::Command;
+// mod database;
+// use database::Database;
+// use database::Command;
 
 struct Input {
     stdin: StdinReader,
@@ -52,45 +52,45 @@ impl Input {
 }
 
 impl Iterator for Input {
-    type Item = Result<Command, String>;
+    type Item = Result<Box<Command>, &'static str>;
 
-    fn next(&mut self) -> Option<Result<Command, String>> {
+    fn next(&mut self) -> Option<Result<Box<Command>, &'static str>> {
         println!("Enter request: (<consumer_id resource_id=quantity resource_id=quantity)");
-        let input = self.stdin.read_line().ok().expect("Failed to read line");
-        let parts =  &input.splitn(1, ' ').collect::<Vec<&str>>();
-
-        let result: Result<Command, String> = match parts[0] {
-            "STOCK" => Resource::new_from_string(parts[1]),
-            "CONSUME" => Consumer::new_from_string(parts[1]),
-            _ => Err("Invalid command.".to_string()),
-        };
-
-        Some(result)
+        match self.stdin.read_line() {
+            Ok(line) => Some(commands::deserialise(&line)),
+            Err(_)   => None,
+        }
     }
 }
 
 mod commands;
+use commands::{Command, ResourceMap, ConsumerMap};
 
 fn main() {
     let mut resources: ResourceMap = HashMap::new();
     let mut consumers: ConsumerMap = HashMap::new();
 
     let mut journal = Journal::new();
-    for command in journal.iter() {
-        command.process(&resources, &consumers);
-        println!("{:?}", command);
+    for line in journal.iter() {
+        match line {
+            Ok(command) => {
+                let result = command.process(&mut resources, &mut consumers);
+                println!("{:?}", result.serialise());
+            },
+            Err(why) => println!("{}", why),
+        };
     }
 
-    for line in Input::new() {
-        match line {
-            Err(why)    => println!("{}", why),
-            Ok(command) => {
-                journal.write(&command);
-                let result = command.process(&resources, &consumers);
-                println!("{:?}", result);
-            },
-        }
-    }
+    // for line in Input::new() {
+    //     match line {
+    //         Err(why)    => println!("{}", why),
+    //         Ok(command) => {
+    //             journal.write(&command);
+    //             let result = command.process(&resources, &consumers);
+    //             println!("{:?}", result);
+    //         },
+    //     }
+    // }
 
     // let reservations = get_reservations();
 
