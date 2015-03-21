@@ -9,7 +9,7 @@ pub struct Journal {
 
 impl Journal {
     pub fn new() -> Journal {
-        Journal { path: Path::new("/tmp/allocator-journal.txt") }
+        Journal { path: Path::new("./tmp/journal.txt") }
     }
 
     pub fn write<T: Command>(&mut self, command: &T) -> bool {

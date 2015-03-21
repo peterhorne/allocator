@@ -69,17 +69,18 @@ use commands::{Command, ResourceMap, ConsumerMap};
 fn main() {
     let mut resources: ResourceMap = HashMap::new();
     let mut consumers: ConsumerMap = HashMap::new();
-
     let mut journal = Journal::new();
+
     for line in journal.iter() {
         match line {
             Ok(command) => {
                 let result = command.process(&mut resources, &mut consumers);
-                println!("{:?}", result.serialise());
             },
             Err(why) => println!("{}", why),
         };
     }
+
+    println!("{:?}", resources);
 
     // for line in Input::new() {
     //     match line {
