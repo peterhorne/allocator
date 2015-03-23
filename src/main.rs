@@ -35,7 +35,8 @@ fn main() {
             .process(&mut resources, &mut consumers);
     }
 
-    println!("{:?}", resources);
+    println!("Resources: {:?}", resources);
+    println!("Consumers: {:?}", consumers);
 
     // for line in Input::new() {
     //     match line {

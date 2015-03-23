@@ -1,5 +1,4 @@
 use std::old_io::{BufferedReader, File, Append, Write, IoResult};
-// use consumer::Consumer;
 use commands::Command;
 use commands;
 
