@@ -15,11 +15,14 @@ impl Resource {
 
     pub fn deserialise(args: &[&str]) -> Result<Box<Command>, &'static str> {
         match args {
-            [id, quantity] => {
-                match quantity.parse::<u32>() {
-                    Ok(quantity) => Ok(Box::new(Resource::new(id.to_string(), quantity))),
-                    Err(_) => Err("Invalid arguments."),
-                }
+            [arg] => match arg.split('=').collect::<Vec<&str>>().as_slice() {
+                [id, quantity] => {
+                    match quantity.parse::<u32>() {
+                        Ok(quantity) => Ok(Box::new(Resource::new(id.to_string(), quantity))),
+                        Err(_) => Err("Invalid arguments."),
+                    }
+                },
+                _ => Err("Invalid arguments."),
             },
             _ => Err("Invalid arguments."),
         }
