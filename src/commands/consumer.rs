@@ -17,11 +17,15 @@ impl Consumer {
             [id, resources..] => {
                 let mut _resources: ResourceMap = HashMap::new();
                 for resource in resources {
-                    println!("{:?}", resource);
-                    // match resource.split('=').collect::<Vec<&str>>() {
-                    //     [resource_id, quantity] => { _resources.insert(resource_id, quantity) },
-                    //     _  => { return Err("Invalid arguments.") },
-                    // };
+                    match resource.split('=').collect::<Vec<&str>>().as_slice() {
+                        [resource_id, quantity] => {
+                            match quantity.parse::<u32>() {
+                                Ok(quantity) => { _resources.insert(resource_id.to_string(), quantity); },
+                                Err(_) => { return Err("Invalid arguments.") },
+                            }
+                        },
+                        _  => { return Err("Invalid arguments.") },
+                    };
                 };
                 Ok(Box::new(Consumer::new(id.to_string(), _resources)))
             },
