@@ -53,7 +53,7 @@ impl Iterator for JournalIter {
 
     fn next(&mut self) -> Option<Result<Box<Command>, &'static str>> {
         match self.file.read_line() {
-            Ok(line) => Some(commands::deserialise(&line)),
+            Ok(line) => Some(commands::from_str(&line)),
             Err(why) => { println!("{}", why); None },
         }
     }

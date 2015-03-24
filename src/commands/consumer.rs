@@ -12,7 +12,7 @@ impl Consumer {
         Consumer { id: id, resources: resources }
     }
 
-    pub fn deserialise(args: &[&str]) -> Result<Box<Command>, &'static str> {
+    pub fn from_str(args: &[&str]) -> Result<Box<Command>, &'static str> {
         match args {
             [id, resources..] => {
                 let mut _resources: ResourceMap = HashMap::new();

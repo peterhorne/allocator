@@ -11,11 +11,11 @@ pub type Quantity = u32;
 pub type ResourceMap = HashMap<Uuid, Quantity>;
 pub type ConsumerMap = HashMap<Uuid, ResourceMap>;
 
-pub fn deserialise(args: &str) -> Result<Box<Command>, &'static str> {
+pub fn from_str(args: &str) -> Result<Box<Command>, &'static str> {
     match args.trim().split(' ').collect::<Vec<&str>>().as_slice() {
         [name, args..] => match name {
-            "RESOURCE" => Resource::deserialise(args),
-            "CONSUMER" => Consumer::deserialise(args),
+            "RESOURCE" => Resource::from_str(args),
+            "CONSUMER" => Consumer::from_str(args),
             _ => Err("Unrecognised command."),
         },
         _ => Err("Unrecognised command."),

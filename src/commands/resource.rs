@@ -13,7 +13,7 @@ impl Resource {
         Resource { id: id, quantity: quantity }
     }
 
-    pub fn deserialise(args: &[&str]) -> Result<Box<Command>, &'static str> {
+    pub fn from_str(args: &[&str]) -> Result<Box<Command>, &'static str> {
         match args {
             [arg] => match arg.split('=').collect::<Vec<&str>>().as_slice() {
                 [id, quantity] => {
