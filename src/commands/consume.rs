@@ -2,14 +2,14 @@ use commands::Command;
 use database::Database;
 
 #[derive(Debug)]
-pub struct Consumer {
+pub struct Consume {
     pub id: String,
     pub resources: Vec<(String, u32)>,
 }
 
-impl Consumer {
-    pub fn new(id: String, resources: Vec<(String, u32)>) -> Consumer {
-        Consumer { id: id, resources: resources }
+impl Consume {
+    pub fn new(id: String, resources: Vec<(String, u32)>) -> Consume {
+        Consume { id: id, resources: resources }
     }
 
     pub fn from_str(args: &[&str]) -> Result<Box<Command>, &'static str> {
@@ -27,14 +27,14 @@ impl Consumer {
                 }
             }
 
-            Ok(Box::new(Consumer::new(id.to_string(), resources)))
+            Ok(Box::new(Consume::new(id.to_string(), resources)))
         } else {
             Err("Invalid arguments.")
         }
     }
 }
 
-impl Command for Consumer {
+impl Command for Consume {
     fn to_string(&self) -> String {
         // let resources = consumer.resources.iter()
         //     .map(|(stock_id, quantity)| format!("{}={}", stock_id, quantity))
@@ -47,6 +47,6 @@ impl Command for Consumer {
 
     fn execute(&self, database: &mut Database) -> Box<Command> {
         let result = database.consume(&self.id, &self.resources);
-        Box::new(Consumer::new(self.id.to_string(), result))
+        Box::new(Consume::new(self.id.to_string(), result))
     }
 }
