@@ -18,7 +18,7 @@ impl Journal {
     }
 
     pub fn iter(&self) -> JournalIter {
-        let mut file = BufferedReader::new(File::open(&self.path));
+        let file = BufferedReader::new(File::open(&self.path));
         JournalIter { file: file  }
     }
 }
