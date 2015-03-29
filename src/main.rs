@@ -1,19 +1,9 @@
-use std::collections::HashMap;
-use std::collections::hash_map::Entry::{Occupied, Vacant};
+#![feature(convert)]
+#![feature(old_path)]
+#![feature(old_io)]
 
-type ItemMap = HashMap<&'static str, i32>;
-
-fn diff(a: &ItemMap, b: &ItemMap) -> ItemMap {
-    let mut result = b.clone();
-    for (key, &value) in a {
-        match result.entry(key) {
-            Occupied(mut v) => { *v.get_mut() -= value; },
-            Vacant(mut v)   => { v.insert(-value); },
-        }
-    };
-
-    result
-}
+mod database;
+use database::Database;
 
 mod journal;
 use journal::Journal;
@@ -22,21 +12,19 @@ mod input;
 use input::Input;
 
 mod commands;
-use commands::{Command, ResourceMap, ConsumerMap};
+use commands::Command;
 
 fn main() {
-    let mut resources: ResourceMap = HashMap::new();
-    let mut consumers: ConsumerMap = HashMap::new();
+    let mut database = Database::new();
     let mut journal = Journal::new();
 
     for line in journal.iter() {
         line.ok()
             .expect("Journal is corrupt")
-            .process(&mut resources, &mut consumers);
+            .execute(&mut database);
     }
 
-    println!("Resources: {:?}", resources);
-    println!("Consumers: {:?}", consumers);
+    println!("Database: {:?}", database);
 
     // for line in Input::new() {
     //     match line {

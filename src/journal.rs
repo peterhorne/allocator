@@ -1,6 +1,7 @@
-use std::old_io::{BufferedReader, File, Append, Write, IoResult};
-use commands::Command;
+use std::old_path::Path;
+use std::old_io::{Writer, Buffer, BufferedReader, File, Append, Write, IoResult};
 use commands;
+use commands::Command;
 
 pub struct Journal {
     path: Path,
@@ -11,31 +12,9 @@ impl Journal {
         Journal { path: Path::new("./tmp/journal.txt") }
     }
 
-    pub fn write<T: Command>(&mut self, command: &T) -> bool {
-        let mut file = match File::open_mode(&self.path, Append, Write) {
-            Err(why) => {
-                println!("{}", why);
-                return false;
-            },
-            Ok(file) => file,
-        };
-
-        // let resources = consumer.resources.iter()
-        //     .map(|(stock_id, quantity)| format!("{}={}", stock_id, quantity))
-        //     .collect::<Vec<String>>()
-        //     .connect(" ");
-
-        // let line = format!("{} {}\n", consumer.id, resources);
-
-        let line = command.serialise();
-
-        match file.write_str(&line) {
-            Err(why) => {
-                println!("{}", why);
-                false
-            },
-            Ok(_) => true
-        }
+    pub fn write<T: Command>(&mut self, command: &T) -> IoResult<()> {
+        let mut file = try!(File::open_mode(&self.path, Append, Write));
+        file.write_str(&command.to_string())
     }
 
     pub fn iter(&self) -> JournalIter {
