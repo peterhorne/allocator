@@ -3,15 +3,13 @@
 #![feature(old_io)]
 
 mod database;
-use database::Database;
-
 mod journal;
-use journal::Journal;
-
 mod input;
-use input::Input;
-
 mod commands;
+
+use database::Database;
+use journal::Journal;
+use input::Input;
 use commands::Command;
 
 fn main() {
