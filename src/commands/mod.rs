@@ -1,7 +1,7 @@
 use database::Database;
 
-mod resource;
-use self::resource::Resource;
+mod stock;
+use self::stock::Stock;
 
 mod consume;
 use self::consume::Consume;
@@ -9,7 +9,7 @@ use self::consume::Consume;
 pub fn from_str(args: &str) -> Result<Box<Command>, &'static str> {
     match args.trim().split(' ').collect::<Vec<&str>>().as_ref() {
         [name, args..] => match name {
-            "STOCK" =>   Resource::from_str(args),
+            "STOCK" =>   Stock::from_str(args),
             "CONSUME" => Consume::from_str(args),
             _ => Err("Unrecognised command."),
         },
