@@ -1,6 +1,5 @@
 #![feature(convert)]
-#![feature(old_path)]
-#![feature(old_io)]
+#![feature(slice_patterns)]
 
 mod database;
 mod journal;
@@ -9,12 +8,12 @@ mod commands;
 
 use database::Database;
 use journal::Journal;
-use input::Input;
+// use input::Input;
 use commands::Command;
 
 fn main() {
     let mut database = Database::new();
-    let mut journal = Journal::new();
+    let journal = Journal::new();
 
     for line in journal.iter() {
         line.ok()

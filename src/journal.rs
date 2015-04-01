@@ -1,39 +1,51 @@
-use std::old_path::Path;
-use std::old_io::{Writer, Buffer, BufferedReader, File, Append, Write, IoResult};
+use std::fs::{File, OpenOptions};
+use std::io;
+use std::io::{BufRead, BufReader, Lines, Write};
+
 use commands;
 use commands::Command;
 
-pub struct Journal {
-    path: Path,
+struct CommandReader<T: BufRead> {
+    lines: Lines<T>,
 }
 
-impl Journal {
-    pub fn new() -> Journal {
-        Journal { path: Path::new("./tmp/journal.txt") }
-    }
-
-    pub fn write<T: Command>(&mut self, command: &T) -> IoResult<()> {
-        let mut file = try!(File::open_mode(&self.path, Append, Write));
-        file.write_str(&command.to_string())
-    }
-
-    pub fn iter(&self) -> JournalIter {
-        let file = BufferedReader::new(File::open(&self.path));
-        JournalIter { file: file  }
+impl<T: BufRead> CommandReader<T> {
+    fn new(reader: T) -> Self {
+        CommandReader { lines: reader.lines() }
     }
 }
 
-struct JournalIter {
-    file: BufferedReader<IoResult<File>>,
-}
-
-impl Iterator for JournalIter {
+impl<T: BufRead> Iterator for CommandReader<T> {
     type Item = Result<Box<Command>, &'static str>;
 
     fn next(&mut self) -> Option<Result<Box<Command>, &'static str>> {
-        match self.file.read_line() {
-            Ok(line) => Some(commands::from_str(&line)),
-            Err(why) => { println!("{}", why); None },
+        match self.lines.next() {
+            Some(line) => match line {
+                Ok(line) => Some(commands::from_str(&line)),
+                Err(_)   => None,
+            },
+            None => None,
         }
+    }
+}
+
+pub struct Journal;
+
+impl Journal {
+    pub fn new() -> Journal {
+        Journal
+    }
+
+    pub fn write<T: Command>(&mut self, command: &T) -> io::Result<()> {
+        let mut options = OpenOptions::new();
+        options.append(true);
+        let mut file = try!(options.open("./tmp/journal.txt"));
+        file.write_all(command.to_string().as_bytes())
+    }
+
+    pub fn iter(&self) -> CommandReader<BufReader<File>> {
+        let file = File::open("./tmp/journal.txt").ok().expect("Couldn't open journal.");
+        let journal = BufReader::new(file);
+        CommandReader::new(journal)
     }
 }
