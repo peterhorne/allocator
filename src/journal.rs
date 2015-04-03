@@ -29,22 +29,24 @@ impl<T: BufRead> Iterator for CommandReader<T> {
     }
 }
 
-pub struct Journal;
+pub struct Journal {
+    path: String,
+}
 
 impl Journal {
-    pub fn new() -> Journal {
-        Journal
+    pub fn new(path: String) -> Journal {
+        Journal { path: path }
     }
 
     pub fn write<T: Command>(&mut self, command: &T) -> io::Result<()> {
         let mut options = OpenOptions::new();
         options.append(true);
-        let mut file = try!(options.open("./tmp/journal.txt"));
+        let mut file = try!(options.open(&self.path));
         file.write_all(command.to_string().as_bytes())
     }
 
     pub fn iter(&self) -> CommandReader<BufReader<File>> {
-        let file = File::open("./tmp/journal.txt").ok().expect("Couldn't open journal.");
+        let file = File::open(&self.path).ok().expect("Couldn't open journal.");
         let journal = BufReader::new(file);
         CommandReader::new(journal)
     }

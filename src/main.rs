@@ -13,7 +13,7 @@ use commands::Command;
 
 fn main() {
     let mut database = Database::new();
-    let journal = Journal::new();
+    let journal = Journal::new("./tmp/journal.txt".to_string());
 
     for line in journal.iter() {
         line.ok()
