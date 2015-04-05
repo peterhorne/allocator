@@ -36,13 +36,12 @@ impl Consume {
 
 impl Command for Consume {
     fn to_string(&self) -> String {
-        // let resources = consumer.resources.iter()
-        //     .map(|(stock_id, quantity)| format!("{}={}", stock_id, quantity))
-        //     .collect::<Vec<String>>()
-        //     .connect(" ");
+        let resources = self.resources.iter()
+            .map(|&(ref stock_id, ref quantity)| format!("{}={}", stock_id, quantity))
+            .collect::<Vec<String>>()
+            .connect(" ");
 
-        // let line = format!("{} {}\n", consumer.id, resources);
-        format!("CONSUME {}", self.id)
+        format!("CONSUME {} {}", self.id, resources)
     }
 
     fn execute(&self, database: &mut Database) -> Box<Command> {
