@@ -57,12 +57,10 @@ fn handle_connection<T: Read + Write>(mut connection: CommandStream<T>, db_mutex
                 let result = command.execute(&mut *database);
                 // journal.write(&result);
                 connection.write(result.to_string());
-                connection.write('\n'.to_string());
                 connection.flush();
             }
             Some(Err(why)) => {
-                connection.write(why.to_string());
-                connection.write('\n'.to_string());
+                connection.write(format!("{}\n", why).to_string());
                 connection.flush();
             }
             _ => { break; }

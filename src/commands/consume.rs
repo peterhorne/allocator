@@ -41,7 +41,7 @@ impl Command for Consume {
             .collect::<Vec<String>>()
             .connect(" ");
 
-        format!("CONSUME {} {}", self.id, resources)
+        format!("CONSUME {} {}\n", self.id, resources)
     }
 
     fn execute(&self, database: &mut Database) -> Box<Command> {

@@ -27,7 +27,7 @@ impl Stock {
 
 impl Command for Stock {
     fn to_string(&self) -> String {
-        format!("STOCK {} {}", self.id, self.quantity)
+        format!("STOCK {}={}\n", self.id, self.quantity)
     }
 
     fn execute(&self, database: &mut Database) -> Box<Command> {
