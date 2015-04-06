@@ -1,5 +1,6 @@
 #![feature(convert)]
 #![feature(slice_patterns)]
+#![feature(io)]
 
 use std::io::{BufStream, Read, Write};
 use std::net::{TcpListener, TcpStream};
@@ -55,7 +56,7 @@ fn handle_connection<T: Read + Write>(mut connection: CommandStream<T>, db_mutex
                 let mut database = db_mutex.lock().unwrap();
                 let mut journal = journal_mutex.lock().unwrap();
                 let result = command.execute(&mut *database);
-                // journal.write(&result);
+                journal.write(&result.to_string());
                 connection.write(result.to_string());
                 connection.flush();
             }

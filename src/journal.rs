@@ -1,6 +1,7 @@
+use std::error::Error;
 use std::fs::{File, OpenOptions};
-use std::io;
 use std::io::{BufRead, BufReader, Lines, Write};
+use std::io;
 
 use commands;
 use commands::Command;
@@ -38,11 +39,16 @@ impl Journal {
         Journal { path: path }
     }
 
-    pub fn write<T: Command>(&mut self, command: &T) -> io::Result<()> {
-        let mut options = OpenOptions::new();
-        options.append(true);
-        let mut file = try!(options.open(&self.path));
-        file.write_all(command.to_string().as_bytes())
+    pub fn write(&mut self, command: &String) -> io::Result<()> {
+        let mut file = OpenOptions::new()
+            .write(true)
+            .append(true)
+            .open(&self.path)
+            .ok()
+            .expect("Couldn't open journal.");
+
+        try!(file.write_all(command.as_bytes()));
+        file.flush()
     }
 
     pub fn iter(&self) -> CommandReader<BufReader<File>> {
